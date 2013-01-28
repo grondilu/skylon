@@ -1,26 +1,18 @@
-radius = 6.75 / 2;
+L = 85;
+R = 6.75 / 2;
 payload = [14, 5, 5.5];
 
+function sears_hack(x) = R * pow(4 * x/L * (L-x)/L, 3/4);
+
 module body() {
-   translate([payload[0]/2, 0, 0])
-      rotate(a=[0, 90, 0])
-      cylinder( r1=radius, r2 = .5, h=36 );
-   cube(size= payload, center = true);
-   multmatrix( [
-	   [0, 0, -1, -payload[0]/2],
-		[0, 1, 0, 0],
-		[1, 0, 0, 0],
-		[0, 90, 0, 1]
-	]
-   ) cylinder( r=radius, h = 6 );
-   multmatrix( [
-		[0, 0, -1, -payload[0]/2 - 6 ],
-		[0, 1, 0, 0],
-		[1, 0, .1, 0],
-		[0, 0, 0, 1]
-	]
-   )
-     cylinder( r1=radius, r2 = .5, h=35 - 6);
+   translate([-L/2,0,0])
+   rotate([0,90,0])
+	for(z=[0:L-1]) {
+	    assign(r1 = sears_hack(z), r2 = sears_hack(z+1)) {
+		translate([0,0,z])
+		    cylinder(r1 = r1, r2=r2, h = 1);
+	    }
+	}
 }
 
 module wing() {
@@ -33,9 +25,9 @@ module wing() {
 
 module engine() {
    rotate(a=[0, 90, 0]) {
-      cylinder( r=2, h=10, center = true );
+      cylinder( r1=2.4, r2=1.75, h=10, center = true );
       translate( [0,0,5] )
-      cylinder( r1=1.5, r2=0, h=2.5 );
+      cylinder( r1=1.75, r2=0, h=4 );
    }
 }
 
