@@ -30,7 +30,7 @@ module wing() {
 
 module engine() {
    r1 = 2.4; r2 = 1.75;
-   angle = 30; delta_angle = 2;
+   angle = 30; delta_angle = 1;
    curvature_radius = 20;
    for(ratio = [0:delta_angle/angle:1-delta_angle/angle])
    assign(
@@ -44,7 +44,7 @@ module engine() {
    [cos(a), 0, sin(a), curvature_radius*(-1+cos(a))],
    [0, 0, 0, 1]
    ])
-   cylinder( h = delta_angle*pi/180*(curvature_radius + r1), r1 = r1, r2 = r2 );
+   cylinder( h = delta_angle*pi/180*(curvature_radius + r1), r1 = r1, r2 = r2, center = true );
    assign(a = angle/2-delta_angle)
    multmatrix([
    [sin(a), 0, -cos(a), curvature_radius*sin(a)],
@@ -52,6 +52,7 @@ module engine() {
    [cos(a), 0, sin(a), curvature_radius*(-1+cos(a))],
    [0, 0, 0, 1]
    ]) mirror([0,0,1])
+     translate( [0, 0, delta_angle*pi/180*curvature_radius /2 ] )
 	  cylinder( r1=r2, r2=0, h=4 );
 }
 
