@@ -79,8 +79,10 @@ module rudder() {
 
 module payload_mask() {
    smoothing_radius = 1;
-   translate([-payload[0]/2, payload[1]/2+smoothing_radius, -R])
-      minkowski() {
+   translate([-payload[0]/2, payload[1]/2, -R])
+     cube([payload[0],R,2*R]);    
+   * translate([-payload[0]/2, payload[1]/2+smoothing_radius, -R])
+     minkowski() {
          cube([payload[0]-smoothing_radius,R,2*R]);
          cylinder(r=smoothing_radius, 2*R);
       }
