@@ -23,7 +23,7 @@ module wing() {
    translate([0, 2.5, -2])
       linear_extrude(height=.5)
       polygon(
-	    points = [[-7, -2], [7, -2], [2, 10], [-5, 10]],
+	    points = [[-8, -2], [7, -2], [2, 9], [-5, 9]],
 	    paths = [[0,1,2,3],[1,2,3,0]]
 	    ); 
 }
@@ -35,8 +35,8 @@ module engine() {
    for(ratio = [0:delta_angle/angle:1-delta_angle/angle])
    assign(
       a = -angle/2 + ratio*angle,
-      r1 = r1+ (r2-r1)*ratio,
-      r2 = r1+ (r2-r1)*(ratio + delta_angle/angle)   
+      r2 = r1+ (r2-r1)*ratio,
+      r1 = r1+ (r2-r1)*(ratio + delta_angle/angle)   
    )
    multmatrix([
    [sin(a), 0, -cos(a), curvature_radius*sin(a)],
@@ -77,8 +77,12 @@ module rudder() {
 }
 
 module payload_mask() {
-   translate([-payload[0]/2, payload[1]/2, -R])
-      cube([payload[0],R,2*R]);
+   smoothing_radius = 1;
+   translate([-payload[0]/2, payload[1]/2+smoothing_radius, -R])
+      minkowski() {
+         cube([payload[0]-smoothing_radius,R,2*R]);
+         cylinder(r=smoothing_radius, 2*R);
+      }
 }
 
 module fuselage() {
@@ -91,13 +95,13 @@ module fuselage() {
    }
    wing();
    mirror([0, 1, 0]) wing();
-   translate([-1, 11, -2] ) engine();
-   translate([-1, -11, -2] ) engine();
+   translate([-2, 10, -1] ) engine();
+   translate([-2, -10, -1] ) engine();
    canard();
    mirror([0, 1, 0]) canard();
    rudder();
 }
 
-color([0.25,0.25,0.25])
+color([0.2,0.2,0.2])
    fuselage();
-   $fs = .1;
+$fs = .1;
