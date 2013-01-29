@@ -5,14 +5,27 @@ payload = [14, 5, 5.5];
 function sears_hack(x) = R * pow(4 * x/L * (L-x)/L, 3/4);
 
 module body() {
+   cube(payload, center = true);
    translate([-L/2,0,0])
-   rotate([0,90,0])
-	for(z=[0:L-1]) {
+   rotate([0,90,0]) {
+   multmatrix( [
+   [1,0,.04,-(L-payload[0])/2*.04],
+   [0,1,0,0],
+   [0,0,1,0],
+   [0,0,0,1]
+])	for(z=[0:(L-payload[0])/2-1]) {
 	    assign(r1 = sears_hack(z), r2 = sears_hack(z+1)) {
 		translate([0,0,z])
 		    cylinder(r1 = r1, r2=r2, h = 1);
 	    }
 	}
+	for(z=[((L+payload[0])/2):L-1]) {
+	    assign(r1 = sears_hack(z), r2 = sears_hack(z+1)) {
+		translate([0,0,z])
+		    cylinder(r1 = r1, r2=r2, h = 1);
+	    }
+	}
+}
 }
 
 module wing() {
@@ -41,9 +54,10 @@ module canard() {
 }
 
 module rudder() {
-   translate([-38, 0, 1])
+   width = .5;
+   translate([-38, width/2, 1])
       rotate(a=[90, 0, 0])
-      linear_extrude(height=.5)
+      linear_extrude(height=width)
       polygon(
 	    points = [[0, 0], [8, 0], [0, 8], [-1, 8]], 
 	    paths = [[0,1,2,3],[1,2,3,0]]
