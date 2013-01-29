@@ -5,33 +5,23 @@ payload = [14, 5, 5.5];
 function sears_hack(x) = R * pow(4 * x/L * (L-x)/L, 3/4);
 
 module body() {
-   cube(payload, center = true);
-   translate([-L/2,0,0])
-   rotate([0,90,0]) {
-   multmatrix( [
-   [1,0,.04,-(L-payload[0])/2*.04],
-   [0,1,0,0],
-   [0,0,1,0],
-   [0,0,0,1]
-])	for(z=[0:(L-payload[0])/2-1]) {
-	    assign(r1 = sears_hack(z), r2 = sears_hack(z+1)) {
-		translate([0,0,z])
-		    cylinder(r1 = r1, r2=r2, h = 1);
-	    }
+   dx = 1;
+   for(x=[0:dx:L-dx]) {
+	    assign(r1 = sears_hack(x), r2 = sears_hack(x+dx)) {
+      multmatrix( [
+         [ 0, 0,     1,           x-L/2 ],
+         [ 0, 1,     0,               0 ],
+         [-1, 0, x > L/2 ? 0 : (r1-r2)/dx, x>L/2 ? 0 : R-r1],
+         [ 0, 0,     0,               1 ]
+      ] ) cylinder(r1 = r1, r2=r2, h = dx);
+	   }
 	}
-	for(z=[((L+payload[0])/2):L-1]) {
-	    assign(r1 = sears_hack(z), r2 = sears_hack(z+1)) {
-		translate([0,0,z])
-		    cylinder(r1 = r1, r2=r2, h = 1);
-	    }
-	}
-}
 }
 
 module wing() {
    linear_extrude(height=.5)
    polygon(
-      points = [[-7, 0], [7, 0], [2, 10], [-5, 10]],
+      points = [[-7, -2], [7, -2], [2, 10], [-5, 10]],
       paths = [[0,1,2,3],[1,2,3,0]]
    ); 
 }
@@ -55,17 +45,29 @@ module canard() {
 
 module rudder() {
    width = .5;
-   translate([-38, width/2, 1])
+   height = 5;
+   translate([-40, width/2, R])
       rotate(a=[90, 0, 0])
       linear_extrude(height=width)
       polygon(
-	    points = [[0, 0], [8, 0], [0, 8], [-1, 8]], 
+	    points = [[0, 0], [6, 0], [-2, height], [-3, height]], 
 	    paths = [[0,1,2,3],[1,2,3,0]]
 	    );
 }
 
+module payload_mask() {
+   translate([-payload[0]/2, payload[1]/2, -R])
+   cube([payload[0],R,2*R]);
+}
+
 module fuselage() {
-   body();
+   difference() {
+      body();
+      union() {
+         payload_mask();
+         mirror([0,1,0]) payload_mask();
+      }
+   }
    translate([0, 3, -2]) wing();
    mirror([0, 1, 0]) translate([0, 3, -2]) wing();
    translate([-1, 12, -2] ) engine();
@@ -75,5 +77,6 @@ module fuselage() {
    rudder();
 }
 
+color([0.25,0.25,0.25])
 fuselage();
-$fs = .5;
+$fs = .1;
