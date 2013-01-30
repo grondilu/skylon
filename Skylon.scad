@@ -12,7 +12,9 @@ module body() {
 	 multmatrix( [
 	       [ 0, 0,     1,           x-L/2 ],
 	       [ 0, 1,     0,               0 ],
-	       [-1, 0, x > L/2 ? 0 : (r1-r2)/dx, x>L/2 ? 0 : R-r1],
+	       [-1, 0,
+          x>L/2 ? 0 : (r1-r2)/dx,
+          x>L/2 ? 0 : R-r1 ],
 	       [ 0, 0,     0,               1 ]
 	       ] ) cylinder(r1 = r1, r2=r2, h = dx);
       }
@@ -23,15 +25,16 @@ module wing() {
    translate([0, 2.5, -2])
       linear_extrude(height=.5)
       polygon(
-	    points = [[-8, -2], [7, -2], [2, 9], [-5, 9]],
+	    points = [[-8, -2], [7, -2], [2, 6], [-5, 6]],
 	    paths = [[0,1,2,3],[1,2,3,0]]
 	    ); 
 }
 
-module engine() {
+module engine(opening) {
    r1 = 2.4; r2 = 1.75;
    angle = 30; delta_angle = 1;
    curvature_radius = 20;
+   difference() {
    for(ratio = [0:delta_angle/angle:1-delta_angle/angle])
    assign(
       a = -angle/2 + ratio*angle,
@@ -53,14 +56,29 @@ module engine() {
    [0, 0, 0, 1]
    ]) mirror([0,0,1])
      translate( [0, 0, delta_angle*pi/180*curvature_radius /2 ] )
-	  cylinder( r1=r2, r2=0, h=4 );
+     sphere( r2 );
+   }
+assign(a = angle/2-delta_angle)
+   multmatrix([
+   [sin(a), 0, -cos(a), curvature_radius*sin(a)],
+   [0, 1, 0, 0],
+   [cos(a), 0, sin(a), curvature_radius*(-1+cos(a))],
+   [0, 0, 0, 1]
+   ]) mirror([0,0,1])
+     translate( [0, 0, delta_angle*pi/180*curvature_radius /2 ] )
+   translate([0, 0, -opening])
+	cylinder( r1=r2, r2=0, h=4 );
+
 }
 
 module canard() {
+   length = 5;
+   dx = -3;
+   dx1 = 3; dx2 = .5;
    translate([38, 0, 0])
       linear_extrude(height=.1)
       polygon(
-	    points = [[0, 0], [3, 0], [-1.9, 4], [-2.1, 4]],
+	    points = [[0, 0], [dx1, 0], [dx+dx2, length], [dx, length]],
 	    paths = [[0,1,2,3],[1,2,3,0]]
 	    );
 }
@@ -88,7 +106,7 @@ module payload_mask() {
       }
 }
 
-module fuselage() {
+module fuselage(engine_opening) {
    difference() {
       body();
       union() {
@@ -98,13 +116,13 @@ module fuselage() {
    }
    wing();
    mirror([0, 1, 0]) wing();
-   translate([-2, 10, -1] ) engine();
-   translate([-2, -10, -1] ) engine();
+   translate([-2, 10, -1] ) engine(engine_opening);
+   translate([-2,-10, -1] ) engine(engine_opening);
    canard();
    mirror([0, 1, 0]) canard();
    rudder();
 }
 
 color([0.2,0.2,0.2])
-   fuselage();
+   fuselage(2);
 $fs = .1;
